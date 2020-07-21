@@ -1,13 +1,6 @@
-import base64
 import logging
 import os
 import shutil
-import sys
-from pathlib import Path
-
-import boto3
-import pexpect
-from botocore.vendored import requests
 from dotenv import load_dotenv
 
 
@@ -23,19 +16,6 @@ def check_env_credentials(required_keys):
         exit()
 
 
-def set_git_ssh_password_from_env():
-
-    try:
-        pexpect.spawn('bash -c "ssh-agent -s"')
-
-        child = pexpect.spawn('ssh-add')
-        child.expect("Enter passphrase for /root/.ssh/id_rsa: ")
-        child.sendline(os.getenv('GIT_KEY'))
-
-    except Exception as error:
-        print(error)
-
-
 def clone_repository(origin: str):
 
     project_name = origin.split('/')[-1]
@@ -47,21 +27,34 @@ def clone_repository(origin: str):
     os.system(command)
 
 
-def check_folder_for_upload(callback: callable):
-    temp_folder_content = os.listdir('./tmp')
-    if len(temp_folder_content) > 1:
-        shutil.rmtree('./tmp')
-        callback()
+def get_dir_files(path):
+    if os.path.isdir(path):
+        return os.listdir(path)
 
 
-def handle():
+def clear_folder(path):
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
+
+def check_for_upload(path, callback=None):
+
+    if len(get_dir_files(path)) > 1:
+        clear_folder(path)
+        if not callback is None:
+            callback()
+
+
+def run():
+
+    temporary_folder_path = './tmp'
 
     load_dotenv()
-    check_env_credentials({'GIT_KEY'})
-    set_git_ssh_password_from_env()
+    check_env_credentials({'AWS_KEY', 'AWS_SECRET', 'BUCKET_NAME'})
+    clear_folder(temporary_folder_path)
     clone_repository('git@gitlab.com:auditoria-2.0/dashboard.git')
-    check_folder_for_upload(handle)
+    check_for_upload(temporary_folder_path, run)
 
 
 if __name__ == '__main__':
-    handle()
+    run()
