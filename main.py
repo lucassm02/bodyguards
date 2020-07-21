@@ -4,7 +4,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from zipfile import ZipFile
 
 import boto3
 import pexpect
@@ -44,11 +43,25 @@ def clone_repository(origin: str):
 
     print('Cloning project {}\n'.format(project_name))
 
-    command = 'git clone {} {}'.format(origin, path)
+    command = 'git clone --bare {} {}'.format(origin, path)
     os.system(command)
 
 
-load_dotenv()
-check_env_credentials({'GIT_KEY'})
-set_git_ssh_password_from_env()
-clone_repository('git@gitlab.com:auditoria-2.0/dashboard.git')
+def check_folder_for_upload(callback: callable):
+    temp_folder_content = os.listdir('./tmp')
+    if len(temp_folder_content) > 1:
+        shutil.rmtree('./tmp')
+        callback()
+
+
+def handle():
+
+    load_dotenv()
+    check_env_credentials({'GIT_KEY'})
+    set_git_ssh_password_from_env()
+    clone_repository('git@gitlab.com:auditoria-2.0/dashboard.git')
+    check_folder_for_upload(handle)
+
+
+if __name__ == '__main__':
+    handle()
