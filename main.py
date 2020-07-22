@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import shutil
 from datetime import datetime
 
@@ -9,7 +10,7 @@ from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 
 
-def check_env_credentials(required_keys):
+def check_env_credentials(required_keys: list):
 
     missing_variables = required_keys.difference(os.environ.keys())
 
@@ -21,9 +22,18 @@ def check_env_credentials(required_keys):
         exit()
 
 
+def validate_origin(origin: str):
+    if not re.search(r'git@\w+\.[\w\.-]+:[\w\.-]+/[\.\w-]+.git', origin):
+        logging.error(
+            'incorrect git origin, use a origin that supports SSH.\nExample: git@github.com:lucassm02/bodyguards.git  ')
+        exit()
+
+
 def clone_repository(origin: str):
 
-    project_name = origin.split('/')[-1]
+    validate_origin(origin)
+
+    project_name = origin.split(':')[-1].replace('/', '-')
     path = 'tmp/' + project_name
 
     print('Cloning project {}\n'.format(project_name))
@@ -32,17 +42,17 @@ def clone_repository(origin: str):
     os.system(command)
 
 
-def get_dir_files(path):
+def get_dir_files(path: str):
     if os.path.isdir(path):
         return os.listdir(path)
 
 
-def clear_folder(path):
+def clear_folder(path: str):
     if os.path.isdir(path):
         shutil.rmtree(path)
 
 
-def check_the_upload_folder(path, callback=None):
+def check_the_upload_folder(path: str, callback: callable = None):
 
     if len(get_dir_files(path)) > 1:
         clear_folder(path)
@@ -56,7 +66,7 @@ def get_formatted_datetime():
     return br_now.strftime(r'%d-%m-%Y-%H-%M')
 
 
-def generate_file_for_upload(path):
+def generate_file_for_upload(path: str):
     try:
         project_folder = get_dir_files(path)[0]
 
@@ -72,7 +82,7 @@ def generate_file_for_upload(path):
         logging.exception(error)
 
 
-def upload_file(file_name, bucket=None, object_name=None):
+def upload_file(file_name: str, bucket: str = None, object_name: str = None):
     """Upload a file to an S3 bucket
 
     :param file_name: File to upload
@@ -111,7 +121,7 @@ def run():
         'BUCKET_NAME'
     })
     clear_folder(temporary_folder_path)
-    clone_repository('git@gitlab.com:auditoria-2.0/dashboard.git')
+    clone_repository('git@gitlab.com:primi-ecommerce/frontend.git')
     check_the_upload_folder(temporary_folder_path, run)
     file_path = generate_file_for_upload(temporary_folder_path)
     file_name = file_path.replace(temporary_folder_path + '/', '')
