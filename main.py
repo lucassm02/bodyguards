@@ -41,6 +41,8 @@ def clone_repository(origin: str):
     command = 'git clone --bare {} {}'.format(origin, path)
     os.system(command)
 
+    return path
+
 
 def get_dir_files(path: str):
     if os.path.isdir(path):
@@ -52,29 +54,19 @@ def clear_folder(path: str):
         shutil.rmtree(path)
 
 
-def check_the_upload_folder(path: str, callback: callable = None):
-
-    if len(get_dir_files(path)) > 1:
-        clear_folder(path)
-        if not callback is None:
-            callback()
-
-
 def get_formatted_datetime():
     utc_now = pytz.utc.localize(datetime.utcnow())
     br_now = utc_now.astimezone(pytz.timezone("America/Sao_Paulo"))
     return br_now.strftime(r'%d-%m-%Y-%H-%M')
 
 
-def generate_file_for_upload(path: str):
+def generate_file_for_upload(project_path):
     try:
-        project_folder = get_dir_files(path)[0]
 
-        path_to_zip = '{}/{}'.format(path, project_folder)
-        file_name = '{}/{}/backup-{}'.format(path,
-                                             project_folder, get_formatted_datetime())
+        file_name = '{}/backup-{}' \
+            .format(project_path, get_formatted_datetime())
 
-        shutil.make_archive(file_name, 'zip', path_to_zip)
+        shutil.make_archive(file_name, 'zip', project_path)
 
         return file_name + '.zip'
 
@@ -121,12 +113,13 @@ def run():
         'BUCKET_NAME'
     })
     clear_folder(temporary_folder_path)
-    clone_repository('git@gitlab.com:primi-ecommerce/frontend.git')
-    check_the_upload_folder(temporary_folder_path, run)
-    file_path = generate_file_for_upload(temporary_folder_path)
+    project_path = clone_repository(
+        'git@gitlab.com:primi-ecommerce/frontend.git')
+    file_path = generate_file_for_upload(project_path)
     file_name = file_path.replace(temporary_folder_path + '/', '')
-    upload_file(file_name=file_path, object_name=file_name)
-    clear_folder(temporary_folder_path)
+    response = upload_file(file_name=file_path, object_name=file_name)
+    if response:
+        clear_folder(temporary_folder_path)
 
 
 if __name__ == '__main__':
