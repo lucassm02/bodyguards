@@ -36,9 +36,9 @@ def clone_repository(origin: str):
     project_name = origin.split(':')[-1].replace('/', '-')
     path = 'tmp/' + project_name
 
-    print('Cloning project {}\n'.format(project_name))
+    print('Cloning project %s\n' % project_name)
 
-    command = 'git clone --bare {} {}'.format(origin, path)
+    command = 'git clone --bare %s %s' % (origin, path)
     os.system(command)
 
     return path
@@ -63,8 +63,7 @@ def get_formatted_datetime():
 def generate_file_for_upload(project_path):
     try:
 
-        file_name = '{}/backup-{}' \
-            .format(project_path, get_formatted_datetime())
+        file_name = '%s/backup-%s' % (project_path, get_formatted_datetime())
 
         shutil.make_archive(file_name, 'zip', project_path)
 
