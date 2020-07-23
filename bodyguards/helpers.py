@@ -7,7 +7,6 @@ from datetime import datetime
 import boto3
 import pytz
 from botocore.exceptions import ClientError
-from dotenv import load_dotenv
 
 
 def check_env_credentials(required_keys: list):
@@ -98,28 +97,3 @@ def upload_file(file_name: str, bucket: str = None, object_name: str = None):
         logging.error(error)
         return False
     return True
-
-
-def run():
-
-    temporary_folder_path = 'tmp'
-
-    load_dotenv()
-    check_env_credentials({
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'AWS_DEFAULT_REGION',
-        'BUCKET_NAME'
-    })
-    clear_folder(temporary_folder_path)
-    project_path = clone_repository(
-        'git@gitlab.com:primi-ecommerce/frontend.git')
-    file_path = generate_file_for_upload(project_path)
-    file_name = file_path.replace(temporary_folder_path + '/', '')
-    response = upload_file(file_name=file_path, object_name=file_name)
-    if response:
-        clear_folder(temporary_folder_path)
-
-
-if __name__ == '__main__':
-    run()
