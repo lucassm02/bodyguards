@@ -15,7 +15,7 @@ def main():
     })
     clear_folder(__temp__)
     project_path = clone_repository(
-        'git@gitlab.com:primi-ecommerce/frontend.git')
+        origin='git@gitlab.com:primi-ecommerce/frontend.git', path=__temp__)
     file_path = generate_file_for_upload(project_path)
     file_name = file_path.replace(__temp__ + '/', '')
     response = upload_file(file_name=file_path, object_name=file_name)

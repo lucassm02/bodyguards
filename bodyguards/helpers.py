@@ -28,16 +28,16 @@ def validate_origin(origin: str):
         exit()
 
 
-def clone_repository(origin: str):
+def clone_repository(origin: str, path: str):
 
     validate_origin(origin)
 
     project_name = origin.split(':')[-1].replace('/', '-')
-    path = 'tmp/' + project_name
+    project_path = '%s/%s' % (path, project_name)
 
     print('Cloning project %s\n' % project_name)
 
-    command = 'git clone --bare %s %s' % (origin, path)
+    command = 'git clone --bare %s %s' % (origin, project_path)
     os.system(command)
 
     return path
