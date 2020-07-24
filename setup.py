@@ -12,17 +12,20 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'Bodyguards'
+NAME = 'bodyguards'
 DESCRIPTION = 'Bodyguards is responsible for backing up git repositories intelligently to a CDN.'
 URL = 'https://github.com/lucassm02/bodyguards'
 EMAIL = 'lucassm02@gmail.com'
 AUTHOR = 'Lucas Santos'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.1.0dev'
+VERSION = '0.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    # 'requests', 'maya', 'records',
+    'python-dotenv',
+    'pytz',
+    'boto3',
+    'botocore'
 ]
 
 # What packages are optional?
