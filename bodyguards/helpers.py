@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import re
 import shutil
 from datetime import datetime
@@ -35,10 +36,13 @@ def clone_repository(origin: str, path: str):
     project_name = origin.split(':')[-1].replace('/', '-')
     project_path = '%s/%s' % (path, project_name)
 
-    print('Cloning project %s\n' % project_name)
+    command = 'git clone --bare --quiet %s %s' % (origin, project_path)
 
-    command = 'git clone --bare %s %s' % (origin, project_path)
-    os.system(command)
+    try:
+        subprocess.check_output(command, shell=True)
+    except Exception as error:
+        print(error)
+        exit()
 
     return path
 
